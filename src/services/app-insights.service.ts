@@ -4,7 +4,7 @@ import { CorrelationContext, CorrelationContextManager, PrivateCustomProperties 
 import Traceparent from 'applicationinsights/out/Library/Traceparent';
 import Tracestate from 'applicationinsights/out/Library/Tracestate';
 
-import { IAzureFunctionResponse, IHeaders } from '@nswhp/af-core-module';
+import { IHeaders, IHttpResponse } from '@nswhp/af-core-module';
 
 import { AppInsightsHeaders, CorrelationIdManager, HttpRequestParser, ITags } from '../models';
 
@@ -48,7 +48,7 @@ export class AppInsightsService {
    * @param response the http response
    */
   // tslint:disable-next-line: no-any
-  public addAppInsightsHeadersToResponse(response: IAzureFunctionResponse<any>): void {
+  public addAppInsightsHeadersToResponse(response: IHttpResponse<any>): void {
     // Add app insights headers to response
     const appInsightsHeaders: IHeaders = {};
     appInsightsHeaders[AppInsightsHeaders.requestIdHeader] = this.functionTraceParent?.toString() || '';
