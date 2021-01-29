@@ -6,7 +6,8 @@ import Tracestate from 'applicationinsights/out/Library/Tracestate';
 
 import { IHeaders, IHttpResponse } from '@nswhp/af-core-module';
 
-import { AppInsightsHeaders, CorrelationIdManager, HttpRequestParser, ITags } from '../models';
+import { AppInsightsHeaders } from '../models';
+import { CorrelationIdManager, HttpRequestParser, ITags } from '../models/internal';
 
 /**
  * Service wrapper for Azure App Insights
