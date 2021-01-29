@@ -4,7 +4,7 @@ import Tracestate from 'applicationinsights/out/Library/Tracestate';
 import { expect } from 'chai';
 import 'mocha';
 
-import { HttpRequestParser } from '../../src/models';
+import { HttpRequestParser } from '../../src/models/internal';
 
 describe('HttpRequestParser', () => {
 

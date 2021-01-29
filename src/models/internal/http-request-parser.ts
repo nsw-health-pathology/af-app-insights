@@ -6,7 +6,7 @@ import * as url from 'url';
 
 import { IHeaders } from '@nswhp/af-core-module';
 
-import { AppInsightsHeaders } from './app-insights-headers';
+import { AppInsightsHeaders } from '../app-insights-headers';
 import { CorrelationIdManager } from './correlation-id-manager';
 import { RequestParser } from './request-parser';
 import { Util } from './util';
