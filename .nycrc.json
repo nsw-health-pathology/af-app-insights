@@ -15,16 +15,17 @@
     "test*",
     "src/**/index.ts",
     "index.ts",
-    ".eslintrc.js"
+    ".eslintrc.js",
+    "src/models/internal"
   ],
   "reporter": [
     "html",
     "lcov"
   ],
-  "statements": 5,
-  "branches": 5,
-  "functions": 5,
-  "lines": 5,
+  "statements": 85,
+  "branches": 60,
+  "functions": 95,
+  "lines": 85,
   "check-coverage": true,
   "all": true
 }

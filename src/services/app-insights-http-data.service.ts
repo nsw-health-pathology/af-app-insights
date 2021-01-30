@@ -117,10 +117,27 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
 
     } catch (error) {
 
+      // For the most part, I don't expect this code to be called since the
+      // base Axios HTTP Data Service (which I guess is the expected underlying
+      // data service) should handle its own exceptions and return a 500 response
+      // error in the event of a fatal error.
+      //
+      // But in the interest of allowing other underlying HTTP Data services
+      // and in the event that something unforeseen blows up, this catch
+      // will at least track that the HTTP call failed
+
       const e = error as Error;
 
       // App insights metrics
       timer.stop();
+
+      appInsightsClient?.trackDependency({
+        data: url, dependencyTypeName: 'HTTP', duration: timer.duration,
+        resultCode: StatusCodes.INTERNAL_SERVER_ERROR, success: false, name: url,
+        contextObjects: this.appInsightsService.correlationContext || undefined,
+        tagOverrides,
+        time: timer.endDate
+      });
 
       const apiResponse: IApiResponse<unknown> = {
         body: {},
