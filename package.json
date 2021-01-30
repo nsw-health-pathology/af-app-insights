@@ -9,7 +9,7 @@
     "build:production": "npm run build && npm prune --production",
     "test": "mocha --config .mocharc.json 'test/**/*.spec.ts'",
     "test:watch": "npm run test -- --watch-extensions ts --watch",
-    "lint": "eslint -c .eslintrc.js --ext .ts src/** test/**",
+    "lint": "eslint -c .eslintrc.js --ext .ts src/**/*.ts test/**/*.ts",
     "lint-fix": "npm run lint -- --fix",
     "ci": "npm run lint && npm run cover && npm run build",
     "cover": "cross-env NODE_ENV=test nyc --report lcovonly _mocha --config .mocharc.json 'test/**/*.spec.ts'",
