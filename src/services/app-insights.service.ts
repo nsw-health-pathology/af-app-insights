@@ -1,8 +1,7 @@
 import { HttpRequest, TraceContext } from '@azure/functions';
 import { TelemetryClient } from 'applicationinsights';
 import {
-  CorrelationContext,
-  CorrelationContextManager, PrivateCustomProperties
+  CorrelationContext, PrivateCustomProperties
 } from 'applicationinsights/out/AutoCollection/CorrelationContextManager';
 import Traceparent from 'applicationinsights/out/Library/Traceparent';
 import Tracestate from 'applicationinsights/out/Library/Tracestate';
@@ -10,7 +9,7 @@ import Tracestate from 'applicationinsights/out/Library/Tracestate';
 import { IHeaders, IHttpResponse } from '@nswhp/af-core-module';
 
 import { AppInsightsHeaders } from '../models';
-import { CorrelationIdManager, HttpRequestParser, ITags } from '../models/internal';
+import { CorrelationIdManager, HttpRequestParser, ITags, CustomPropertiesImpl } from '../models/internal';
 
 /**
  * Service wrapper for Azure App Insights
@@ -57,6 +56,37 @@ export class AppInsightsService {
     const appInsightsHeaders: IHeaders = {};
     appInsightsHeaders[AppInsightsHeaders.requestIdHeader] = this.functionTraceParent?.toString() || '';
     response.headers = { ...response.headers, ...appInsightsHeaders };
+  }
+
+  /**
+   * Explicitly set the app insights correlation context.
+   *
+   * @param operationName the operation name
+   * @param operationId the unique id for the operation
+   * @param parentId the request id
+   * @param correlationContextHeader the correlation context header text
+   * @param traceparent the traceparent object
+   * @param tracestate the tracestate object
+   */
+  private generateCorrelationContext(
+    operationName: string, operationId: string, parentId?: string, correlationContextHeader?: string,
+    traceparent?: Traceparent, tracestate?: Tracestate
+  ): CorrelationContext {
+    parentId = parentId || operationId;
+
+    const ctx: CorrelationContext = {
+      operation: {
+        name: operationName,
+        id: operationId,
+        parentId,
+        traceparent,
+        tracestate
+      },
+      customProperties: new CustomPropertiesImpl(correlationContextHeader || '')
+    };
+
+    return ctx;
+
   }
 
   /**
@@ -130,22 +160,20 @@ export class AppInsightsService {
 
     const requestParser = new HttpRequestParser(req, this._functionContext);
 
-    const ctx = CorrelationContextManager.generateContextObject(
+    const ctx = this.generateCorrelationContext(
+      requestParser.getOperationName(this.client.context.tags),
       requestParser.getOperationId(this.client.context.tags),
       requestParser.getRequestId(),
-      requestParser.getOperationName(this.client.context.tags),
       requestParser.getCorrelationContextHeader(),
       requestParser.getTraceparent(),
       requestParser.getTracestate()
     );
 
-    if (ctx) {
-      this.client.context.keys.operationId = ctx.operation.id;
-      this.client.context.keys.operationName = ctx.operation.name;
-      this.client.context.keys.operationParentId = ctx.operation.parentId;
+    this.client.context.keys.operationId = ctx.operation.id;
+    this.client.context.keys.operationName = ctx.operation.name;
+    this.client.context.keys.operationParentId = ctx.operation.parentId;
 
-      this.client.context.tags = requestParser.getRequestTags(this.client.context.tags);
-    }
+    this.client.context.tags = requestParser.getRequestTags(this.client.context.tags);
 
     return ctx;
   }
