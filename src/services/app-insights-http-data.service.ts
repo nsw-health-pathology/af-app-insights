@@ -1,7 +1,6 @@
-import { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import * as HttpStatus from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 
-import { AbstractHttpDataService, IApiResponse, IHeaders } from '@nswhp/af-core-module';
+import { AbstractHttpDataService, IApiResponse, IHeaders, IQueryParams } from '@nswhp/af-core-module';
 
 import { Timer } from '../models';
 import { AppInsightsService } from './app-insights.service';
@@ -12,7 +11,7 @@ import { AppInsightsService } from './app-insights.service';
 export class AppInsightsHttpDataService extends AbstractHttpDataService {
 
   constructor(
-    protected readonly axiosClient: AxiosInstance,
+    protected readonly httpClient: AbstractHttpDataService,
     protected readonly appInsightsService: AppInsightsService
   ) {
     super();
@@ -21,95 +20,94 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
   /** Make a HTTP call with GET HTTP method */
   public async makeHttpGetCall<K>(
     url: string,
-    // tslint:disable-next-line: no-any
-    queryParams: any, headers: IHeaders
+    headers: IHeaders = {},
+    queryParams: IQueryParams = {}
   ): Promise<IApiResponse<K>> {
 
-    const getCall = (innerUrl: string, requestConfig: AxiosRequestConfig) => this.axiosClient.get<K>(
-      innerUrl,
-      requestConfig
+    const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
+    const headersWithCorrelationContext = { ...headers, ...appInsightsHeaders };
+
+    const promiseApiCall = this.httpClient.makeHttpGetCall<K>(
+      url,
+      headersWithCorrelationContext,
+      queryParams
     );
 
-    return this.axiosHttpCall(url, queryParams, headers, getCall);
+    return this.appInsightsHttpWrapper(url, promiseApiCall);
   }
 
   /** Make a HTTP call with PUT HTTP method */
   public async makeHttpPutCall<T, K = T>(
     url: string,
-    headers: IHeaders, payload: T
+    payload: T,
+    headers: IHeaders = {}
   ): Promise<IApiResponse<K>> {
 
-    const putCall = (innerUrl: string, requestConfig: AxiosRequestConfig) => this.axiosClient.put<T, AxiosResponse<K>>(
-      innerUrl,
+    const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
+    const headersWithCorrelationContext = { ...headers, ...appInsightsHeaders };
+
+    const promiseApiCall = this.httpClient.makeHttpPutCall<T, K>(
+      url,
       payload,
-      requestConfig
+      headersWithCorrelationContext
     );
 
-    return this.axiosHttpCall(url, {}, headers, putCall);
+    return this.appInsightsHttpWrapper(url, promiseApiCall);
   }
 
   /** Make a HTTP call with POST HTTP method */
   public async makeHttpPostCall<T, K = T>(
     url: string,
-    headers: IHeaders, payload: T,
-    // tslint:disable-next-line: no-any
-    queryParams: any = {},
+    payload: T,
+    headers: IHeaders = {},
+    queryParams: IQueryParams = {}
   ): Promise<IApiResponse<K>> {
 
-    const postCall = (innerUrl: string, requestConfig: AxiosRequestConfig) => this.axiosClient.post<T, AxiosResponse<K>>(
-      innerUrl,
+    const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
+    const headersWithCorrelationContext = { ...headers, ...appInsightsHeaders };
+
+    const promiseApiCall = this.httpClient.makeHttpPostCall<T, K>(
+      url,
       payload,
-      requestConfig
+      headersWithCorrelationContext,
+      queryParams
     );
 
-    return this.axiosHttpCall(url, queryParams, headers, postCall);
+    return this.appInsightsHttpWrapper(url, promiseApiCall);
   }
 
   /**
    * Make the http call to the external API service
+   *
    * @param url The URL of the endpoint to call
    * @param queryParams Any query Params to send
    * @param headers any HTTP Headers to send
-   * @param axiosRequestCallFn The axios operation function
+   * @param promiseApiCall The axios operation function
    */
-  private async axiosHttpCall<K>(
+  private async appInsightsHttpWrapper<K>(
     url: string,
-    // tslint:disable-next-line: no-any
-    queryParams: any, headers: IHeaders,
-    axiosRequestCallFn: (url: string, requestConfig: AxiosRequestConfig) => Promise<AxiosResponse<K>>
+    promiseApiCall: Promise<IApiResponse<K>>
   ): Promise<IApiResponse<K>> {
-
-    const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
-
-    const headersWithCorrelationContext = { ...headers, ...appInsightsHeaders };
 
     // https://github.com/MicrosoftDocs/azure-docs/pull/52838/files
     // Use this with 'tagOverrides' to correlate custom telemetry to the parent function invocation.
     const tagOverrides = this.appInsightsService.tagOverrides;
-
-    const requestConfig: AxiosRequestConfig = {
-      headers: headersWithCorrelationContext,
-      params: queryParams
-    };
 
     const timer = new Timer();
     const appInsightsClient = this.appInsightsService.client;
 
     try {
 
-      const response = await axiosRequestCallFn(url, requestConfig);
+      const apiResponse = await promiseApiCall;
 
-      const apiResponse: IApiResponse<K> = {
-        body: response.data,
-        status: response.status,
-        headers: response.headers as IHeaders
-      };
+      const isSuccess = apiResponse.status >= StatusCodes.OK && apiResponse.status < StatusCodes.BAD_REQUEST;
 
       // App insights metrics
       timer.stop();
+
       appInsightsClient?.trackDependency({
         data: url, dependencyTypeName: 'HTTP', duration: timer.duration,
-        resultCode: response.status, success: true, name: url,
+        resultCode: apiResponse.status, success: isSuccess, name: url,
         contextObjects: this.appInsightsService.correlationContext || undefined,
         tagOverrides,
         time: timer.endDate
@@ -119,32 +117,41 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
 
     } catch (error) {
 
-      const e: AxiosError = error as AxiosError;
+      // For the most part, I don't expect this code to be called since the
+      // base Axios HTTP Data Service (which I guess is the expected underlying
+      // data service) should handle its own exceptions and return a 500 response
+      // error in the event of a fatal error.
+      //
+      // But in the interest of allowing other underlying HTTP Data services
+      // and in the event that something unforeseen blows up, this catch
+      // will at least track that the HTTP call failed
+
+      const e = error as Error;
 
       // App insights metrics
       timer.stop();
+
       appInsightsClient?.trackDependency({
         data: url, dependencyTypeName: 'HTTP', duration: timer.duration,
-        resultCode: e.response && e.response.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        success: false, name: url,
+        resultCode: StatusCodes.INTERNAL_SERVER_ERROR, success: false, name: url,
         contextObjects: this.appInsightsService.correlationContext || undefined,
         tagOverrides,
         time: timer.endDate
       });
 
-      // tslint:disable-next-line: no-any
-      const apiResponse: IApiResponse<any> = {
-        body: e.response?.data || {},
+      const apiResponse: IApiResponse<unknown> = {
+        body: {},
         error: {
           name: e.name,
           message: e.message,
-          data: e.response?.data || 'API Call Failed. ' + e.message
+          data: `API Call Failed. ${e.message}`
         },
-        status: e.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        headers: e.response?.headers as IHeaders
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        headers: {} as IHeaders
       };
 
-      return apiResponse;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return apiResponse as IApiResponse<any>;
     }
   }
 

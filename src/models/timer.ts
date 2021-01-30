@@ -1,7 +1,7 @@
 /** Timer class to track times between downstream api calls */
 export class Timer {
-  private _startDate: number = 0;
-  private _endDate: number = 0;
+  private _startDate = 0;
+  private _endDate = 0;
 
   /** Starts the timer */
   public constructor() {

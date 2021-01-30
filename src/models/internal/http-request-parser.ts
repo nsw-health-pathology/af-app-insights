@@ -1,18 +1,18 @@
+import * as url from 'url';
 import { HttpRequest, TraceContext } from '@azure/functions';
 import { Contracts } from 'applicationinsights';
 import Traceparent from 'applicationinsights/out/Library/Traceparent';
 import Tracestate from 'applicationinsights/out/Library/Tracestate';
-import * as url from 'url';
 
 import { IHeaders } from '@nswhp/af-core-module';
 
-import { AppInsightsHeaders } from './app-insights-headers';
+import { AppInsightsHeaders } from '../app-insights-headers';
 import { CorrelationIdManager } from './correlation-id-manager';
 import { RequestParser } from './request-parser';
 import { Util } from './util';
 
 /** Tag for app insights context */
-export interface ITags { [key: string]: string; }
+export interface ITags { [key: string]: string }
 
 /**
  * Helper class to read data from the requst/response objects and convert them into the telemetry contract
@@ -22,9 +22,9 @@ export class HttpRequestParser extends RequestParser {
   private static readonly keys = new Contracts.ContextTagKeys();
 
   private rawHeaders: IHeaders = {};
-  private parentId: string = '';
-  private operationId: string = '';
-  private requestId: string = '';
+  private parentId = '';
+  private operationId = '';
+  private requestId = '';
   private traceparent: Traceparent = new Traceparent();
   private tracestate: Tracestate | undefined;
 
@@ -43,6 +43,7 @@ export class HttpRequestParser extends RequestParser {
   /**
    * Get a new set of tags for the app insights context using
    * values derived from the request
+   *
    * @param tags Existing app insights context tags
    */
   public getRequestTags(tags: ITags): ITags {
@@ -50,7 +51,7 @@ export class HttpRequestParser extends RequestParser {
 
     const newTags: ITags = {};
 
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const key in tags) {
       newTags[key] = tags[key];
     }
@@ -79,8 +80,7 @@ export class HttpRequestParser extends RequestParser {
 
   /** Returns the Operation name of the request */
   public getOperationName(tags: ITags): string {
-    // tslint:disable-next-line: prefer-template
-    return tags[HttpRequestParser.keys.operationName] || this.method + ' ' + url.parse(this.url).pathname;
+    return tags[HttpRequestParser.keys.operationName] || `${this.method} ${url.parse(this.url).pathname || ''}`;
   }
 
   /** Returns the root request id */
@@ -118,6 +118,7 @@ export class HttpRequestParser extends RequestParser {
 
   /**
    * Get the ID of a header cookie
+   *
    * @param name the name of the header cookie
    */
   private getId(name: string): string {
@@ -158,6 +159,7 @@ export class HttpRequestParser extends RequestParser {
    * Parse the request object and set the trace settings from the headers.
    * Use the function context trace object by default as this will link the function host context
    * to the function worker context
+   *
    * @param request The inbound HttpRequest
    * @param functionContext The Azure Function Context
    */

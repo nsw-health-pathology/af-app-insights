@@ -6,11 +6,34 @@ import { TelemetryClient } from 'applicationinsights';
  */
 export class AppInsightsFactory {
 
+  private static client: TelemetryClient | undefined;
+
   /**
    * Create and return a new instance of the App Insights client
+   * with preset bootstrapped configuration sets
    */
   public create(): TelemetryClient | undefined {
-    return this.bootstrap();
+    if (!AppInsightsFactory.client) {
+      AppInsightsFactory.client = this.bootstrap();
+    }
+
+    return AppInsightsFactory.client;
+
+  }
+
+  /**
+   * Returns a new instance of the telemetry client with default settings
+   */
+  public defaultClient(): TelemetryClient | undefined {
+    if (!AppInsightsFactory.client) {
+      try {
+        AppInsightsFactory.client = new AppInsights.TelemetryClient();
+      } catch (error) {
+        // suppress and ignore
+      }
+    }
+
+    return AppInsightsFactory.client;
   }
 
   /**
