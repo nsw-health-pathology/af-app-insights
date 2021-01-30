@@ -15,7 +15,8 @@
     "test*",
     "src/**/index.ts",
     "index.ts",
-    ".eslintrc.js"
+    ".eslintrc.js",
+    "src/models/internal"
   ],
   "reporter": [
     "html",
