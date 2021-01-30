@@ -67,7 +67,6 @@ export class AppInsightsLoggingService extends LoggingService {
       properties
     });
 
-    throw error;
   }
 
   /**
