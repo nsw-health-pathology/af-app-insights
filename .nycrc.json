@@ -11,11 +11,20 @@
     "**/*.spec.ts",
     "dist/*",
     "coverage/*",
-    "playground/*"
+    "playground/*",
+    "test*",
+    "src/**/index.ts",
+    "index.ts",
+    ".eslintrc.js"
   ],
   "reporter": [
     "html",
     "lcov"
   ],
+  "statements": 5,
+  "branches": 5,
+  "functions": 5,
+  "lines": 5,
+  "check-coverage": true,
   "all": true
 }

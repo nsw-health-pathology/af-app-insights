@@ -21,7 +21,7 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
   public async makeHttpGetCall<K>(
     url: string,
     headers: IHeaders = {},
-    queryParams: IQueryParams = {},
+    queryParams: IQueryParams = {}
   ): Promise<IApiResponse<K>> {
 
     const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
@@ -40,7 +40,7 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
   public async makeHttpPutCall<T, K = T>(
     url: string,
     payload: T,
-    headers: IHeaders = {},
+    headers: IHeaders = {}
   ): Promise<IApiResponse<K>> {
 
     const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
@@ -60,7 +60,7 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
     url: string,
     payload: T,
     headers: IHeaders = {},
-    queryParams: IQueryParams = {},
+    queryParams: IQueryParams = {}
   ): Promise<IApiResponse<K>> {
 
     const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
@@ -78,6 +78,7 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
 
   /**
    * Make the http call to the external API service
+   *
    * @param url The URL of the endpoint to call
    * @param queryParams Any query Params to send
    * @param headers any HTTP Headers to send
@@ -126,13 +127,13 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
         error: {
           name: e.name,
           message: e.message,
-          data: 'API Call Failed. ' + e.message
+          data: `API Call Failed. ${e.message}`
         },
         status: StatusCodes.INTERNAL_SERVER_ERROR,
         headers: {} as IHeaders
       };
 
-      // tslint:disable-next-line: no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return apiResponse as IApiResponse<any>;
     }
   }

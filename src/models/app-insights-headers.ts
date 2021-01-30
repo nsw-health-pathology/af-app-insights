@@ -1,4 +1,5 @@
 /** Enumeration of Appp insights request headers for correlation */
+// eslint-disable-next-line no-shadow
 export enum AppInsightsHeaders {
 
   /**

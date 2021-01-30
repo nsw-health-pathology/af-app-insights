@@ -1,6 +1,9 @@
 import { HttpRequest, TraceContext } from '@azure/functions';
 import { TelemetryClient } from 'applicationinsights';
-import { CorrelationContext, CorrelationContextManager, PrivateCustomProperties } from 'applicationinsights/out/AutoCollection/CorrelationContextManager';
+import {
+  CorrelationContext,
+  CorrelationContextManager, PrivateCustomProperties
+} from 'applicationinsights/out/AutoCollection/CorrelationContextManager';
 import Traceparent from 'applicationinsights/out/Library/Traceparent';
 import Tracestate from 'applicationinsights/out/Library/Tracestate';
 
@@ -46,10 +49,10 @@ export class AppInsightsService {
 
   /**
    * Add app insights headers to http response
+   *
    * @param response the http response
    */
-  // tslint:disable-next-line: no-any
-  public addAppInsightsHeadersToResponse(response: IHttpResponse<any>): void {
+  public addAppInsightsHeadersToResponse(response: IHttpResponse<unknown>): void {
     // Add app insights headers to response
     const appInsightsHeaders: IHeaders = {};
     appInsightsHeaders[AppInsightsHeaders.requestIdHeader] = this.functionTraceParent?.toString() || '';
@@ -71,7 +74,6 @@ export class AppInsightsService {
 
     let uniqueRequestId: string;
     let uniqueTraceparent: string | undefined;
-    // tslint:disable-next-line: max-line-length
     if (currentContext.operation.traceparent && Traceparent.isValidTraceId(currentContext.operation.traceparent.traceId)) {
       currentContext.operation.traceparent.updateSpanId();
       uniqueRequestId = currentContext.operation.traceparent.getBackCompatRequestId();
@@ -103,7 +105,6 @@ export class AppInsightsService {
     }
 
     if (currentContext?.customProperties) {
-      // tslint:disable-next-line: whitespace
       const correlationContextHeader = (<PrivateCustomProperties>currentContext.customProperties).serializeToHeader();
       if (correlationContextHeader) {
         headers[AppInsightsHeaders.correlationContextHeader] = correlationContextHeader;
@@ -116,6 +117,7 @@ export class AppInsightsService {
   /**
    * Create an initialised App Insights Correlation Context using the inbound request
    * to fetch HTTP headers
+   *
    * @param req The inbound HTTP Request
    */
   private initialiseCorrelationContext(req: HttpRequest): CorrelationContext | null {

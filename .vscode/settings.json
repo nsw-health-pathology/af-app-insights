@@ -1,12 +1,12 @@
 {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll.tslint": true,
-    },
-    "tslint.autoFixOnSave": true,
-    "cSpell.words": [
-        "Tracestate",
-        "nswhp",
-        "traceparent"
-    ],
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+  },
+  "cSpell.words": [
+    "Tracestate",
+    "nswhp",
+    "randomu",
+    "traceparent"
+  ],
 }
