@@ -10,9 +10,10 @@ describe('HttpRequestParser', () => {
 
   describe('parseHeaders', () => {
 
-    it('should generate the model for the Api Error payload', async () => {
+    it('should generate the model for the Api Error payload', () => {
 
       const req: HttpRequest = {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         headers: { Authorization: 'Bearer abc123' },
         method: 'GET',
         params: { name: 'Jane' },

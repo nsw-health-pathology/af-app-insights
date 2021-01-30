@@ -10,16 +10,18 @@ export class CorrelationIdManager {
 
   /**
    * Generate a request Id according to https://github.com/lmolkova/correlation/blob/master/hierarchical_request_id.md
+   *
    * @param parentId The Trace Parent ID
    */
   public static generateRequestId(parentId: string): string {
     if (parentId) {
-      parentId = parentId[0] === '|' ? parentId : '|' + parentId;
+      parentId = parentId[0] === '|' ? parentId : `|${parentId}`;
       if (parentId[parentId.length - 1] !== '.') {
         parentId += '.';
       }
 
-      const suffix = (CorrelationIdManager.currentRootId++).toString(16);
+      const base16 = 16;
+      const suffix = (CorrelationIdManager.currentRootId++).toString(base16);
 
       return CorrelationIdManager.appendSuffix(parentId, suffix, '_');
     } else {
@@ -30,6 +32,7 @@ export class CorrelationIdManager {
   /**
    * Given a hierarchical identifier of the form |X.*
    * return the root identifier X
+   *
    * @param id The request-id header of the trace
    */
   public static getRootId(id: string): string {
@@ -42,6 +45,7 @@ export class CorrelationIdManager {
     return id.substring(startIndex, endIndex);
   }
 
+  // eslint-disable-next-line no-magic-numbers
   private static readonly requestIdMaxLength = 1024;
   private static currentRootId = Util.randomu32();
 
@@ -52,6 +56,7 @@ export class CorrelationIdManager {
 
   /**
    * Append the new span suffix to the parent request id
+   *
    * @param parentId parent request id
    * @param suffix span suffix
    * @param delimiter trailing character delimiter
@@ -82,12 +87,12 @@ export class CorrelationIdManager {
       return CorrelationIdManager.generateRootId();
     }
 
-    suffix = Util.randomu32().toString(16);
+    const base16 = 16;
+    suffix = Util.randomu32().toString(base16);
     while (suffix.length < overFlowLength) {
-      suffix = '0' + suffix;
+      suffix = `0${suffix}`;
     }
 
-    // tslint:disable-next-line: prefer-template
-    return parentId.substring(0, trimPosition) + suffix + '#';
+    return `${parentId.substring(0, trimPosition) + suffix}#`;
   }
 }

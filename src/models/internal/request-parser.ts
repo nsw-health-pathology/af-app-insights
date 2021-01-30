@@ -4,8 +4,8 @@
  */
 export abstract class RequestParser {
 
-  protected method: string = '';
-  protected url: string = '';
+  protected method = '';
+  protected url = '';
   protected properties: { [key: string]: string } = {};
 
   /**
