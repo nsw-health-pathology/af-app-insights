@@ -1,6 +1,6 @@
 {
   "name": "@nswhp/af-app-insights",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,7 +33,7 @@
   "homepage": "https://github.com/nsw-health-pathology/af-app-insights#readme",
   "dependencies": {
     "@azure/functions": "^1.2.2",
-    "@nswhp/af-core-module": "^0.1.0",
+    "@nswhp/af-core-module": "^0.1.1",
     "applicationinsights": "^1.8.3",
     "axios": "^0.19.2",
     "http-status-codes": "^2.1.4"
