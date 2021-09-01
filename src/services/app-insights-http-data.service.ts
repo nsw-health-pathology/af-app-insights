@@ -1,6 +1,5 @@
-import { StatusCodes } from 'http-status-codes';
-
 import { AbstractHttpDataService, IApiResponse, IHeaders, IQueryParams } from '@nswhp/af-core-module';
+import { StatusCodes } from 'http-status-codes';
 
 import { Timer } from '../models';
 import { AppInsightsService } from './app-insights.service';
@@ -21,7 +20,9 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
   public async makeHttpGetCall<K>(
     url: string,
     headers: IHeaders = {},
-    queryParams: IQueryParams = {}
+    queryParams: IQueryParams = {},
+    timeout = 0,
+    retries = 0
   ): Promise<IApiResponse<K>> {
 
     const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
@@ -30,7 +31,9 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
     const promiseApiCall = this.httpClient.makeHttpGetCall<K>(
       url,
       headersWithCorrelationContext,
-      queryParams
+      queryParams,
+      timeout,
+      retries
     );
 
     return this.appInsightsHttpWrapper(url, promiseApiCall);
@@ -40,7 +43,9 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
   public async makeHttpPutCall<T, K = T>(
     url: string,
     payload: T,
-    headers: IHeaders = {}
+    headers: IHeaders = {},
+    timeout = 0,
+    retries = 0
   ): Promise<IApiResponse<K>> {
 
     const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
@@ -49,7 +54,9 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
     const promiseApiCall = this.httpClient.makeHttpPutCall<T, K>(
       url,
       payload,
-      headersWithCorrelationContext
+      headersWithCorrelationContext,
+      timeout,
+      retries
     );
 
     return this.appInsightsHttpWrapper(url, promiseApiCall);
@@ -60,7 +67,9 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
     url: string,
     payload: T,
     headers: IHeaders = {},
-    queryParams: IQueryParams = {}
+    queryParams: IQueryParams = {},
+    timeout = 0,
+    retries = 0
   ): Promise<IApiResponse<K>> {
 
     const appInsightsHeaders = this.appInsightsService.getHeadersForDependencyRequest();
@@ -70,7 +79,9 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
       url,
       payload,
       headersWithCorrelationContext,
-      queryParams
+      queryParams,
+      timeout,
+      retries
     );
 
     return this.appInsightsHttpWrapper(url, promiseApiCall);
@@ -82,6 +93,8 @@ export class AppInsightsHttpDataService extends AbstractHttpDataService {
    * @param url The URL of the endpoint to call
    * @param queryParams Any query Params to send
    * @param headers any HTTP Headers to send
+   * @param timeout The number of milliseconds that an API request should wait before timing out.
+   * @param retries The number of times to retry the operation, if a timeout is received.
    * @param promiseApiCall The axios operation function
    */
   private async appInsightsHttpWrapper<K>(
