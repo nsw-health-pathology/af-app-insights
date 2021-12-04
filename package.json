@@ -11,7 +11,7 @@
     "test:watch": "npm run test -- --watch-extensions ts --watch",
     "lint": "eslint -c .eslintrc.js --ext .ts src/**/*.ts test/**/*.ts",
     "lint-fix": "npm run lint -- --fix",
-    "ci": "npm run lint && npm run cover && npm run build",
+    "ci": "npm run lint && npm run audit-report && npm run prod-audit && npm run license-checker && npm run cover && npm run build",
     "cover": "cross-env NODE_ENV=test nyc --report lcovonly _mocha --config .mocharc.json 'test/**/*.spec.ts'",
     "prepare": "npm run build",
     "postversion": "git push && git push --tags",
