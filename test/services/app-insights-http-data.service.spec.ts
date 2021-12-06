@@ -1,5 +1,5 @@
 import { AbstractHttpDataService, AxiosHttpDataService } from '@nswhp/af-core-module';
-import Axios from 'axios';
+import axios from 'axios';
 import { expect } from 'chai';
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
@@ -23,7 +23,7 @@ describe('AppInsightsHttpDataService', () => {
     it('should track successful dependency call', async () => {
 
       // Setup Mock Responses
-      const mockAxios = new MockAdapter(Axios);
+      const mockAxios = new MockAdapter(axios);
       mockAxios.onGet('/version').reply(StatusCodes.OK, { version: '1.0.0' });
 
       const mockAppInsightsClient = mock(NodeClient);
@@ -39,7 +39,7 @@ describe('AppInsightsHttpDataService', () => {
       appInsightsClientInstance.context = new Context();
 
       const appInsightsService = new AppInsightsService(appInsightsClientInstance, mockTraceContext, mockRequest);
-      const axiosHttp = new AxiosHttpDataService(Axios);
+      const axiosHttp = new AxiosHttpDataService(axios);
       const http = new AppInsightsHttpDataService(axiosHttp, appInsightsService);
 
       const response = await http.makeHttpGetCall('/version', {}, {});
@@ -54,7 +54,7 @@ describe('AppInsightsHttpDataService', () => {
     it('should track failed dependency call', async () => {
 
       // Setup Mock Responses
-      const mockAxios = new MockAdapter(Axios);
+      const mockAxios = new MockAdapter(axios);
       mockAxios.onPost('/version').reply(StatusCodes.UNAUTHORIZED, { message: 'Missing API Key' });
 
       const mockAppInsightsClient = mock(NodeClient);
@@ -70,7 +70,7 @@ describe('AppInsightsHttpDataService', () => {
       appInsightsClientInstance.context = new Context();
 
       const appInsightsService = new AppInsightsService(appInsightsClientInstance, mockTraceContext, mockRequest);
-      const axiosHttp = new AxiosHttpDataService(Axios);
+      const axiosHttp = new AxiosHttpDataService(axios);
       const http = new AppInsightsHttpDataService(axiosHttp, appInsightsService);
 
       const response = await http.makeHttpPostCall('/version', {}, {});
