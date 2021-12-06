@@ -57,3 +57,4 @@ coverage/
 
 # ESLint Migration Log
 tslint-to-eslint-config.log
+reports/
